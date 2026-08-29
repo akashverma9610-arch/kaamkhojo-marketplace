@@ -3,13 +3,19 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: KaamKhojo hyperlocal service marketplace API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: marketplace
+    description: Marketplace discovery operations
+  - name: dashboard
+    description: Role-based dashboard summaries
+  - name: profile
+    description: Profile operations
 paths:
   /healthz:
     get:
@@ -24,6 +30,98 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /marketplace/categories:
+    get:
+      operationId: listServiceCategories
+      tags: [marketplace]
+      summary: List service categories
+      responses:
+        "200":
+          description: Available service categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ServiceCategory"
+  /marketplace/technicians:
+    get:
+      operationId: listTechnicians
+      tags: [marketplace]
+      summary: List nearby technicians
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: location
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Nearby technicians
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Technician"
+  /dashboard/customer:
+    get:
+      operationId: getCustomerDashboard
+      tags: [dashboard]
+      summary: Get customer dashboard summary
+      responses:
+        "200":
+          description: Customer dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerDashboard"
+  /dashboard/technician:
+    get:
+      operationId: getTechnicianDashboard
+      tags: [dashboard]
+      summary: Get technician dashboard summary
+      responses:
+        "200":
+          description: Technician dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TechnicianDashboard"
+  /profile:
+    get:
+      operationId: getProfile
+      tags: [profile]
+      summary: Get the current demo profile
+      responses:
+        "200":
+          description: Profile data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+    patch:
+      operationId: updateProfile
+      tags: [profile]
+      summary: Update the current demo profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdate"
+      responses:
+        "200":
+          description: Updated profile data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +131,182 @@ components:
           type: string
       required:
         - status
+    ServiceCategory:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        icon:
+          type: string
+        description:
+          type: string
+        startingPrice:
+          type: number
+      required: [id, name, icon, description, startingPrice]
+    Technician:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        specialty:
+          type: string
+        rating:
+          type: number
+        reviewCount:
+          type: number
+        distance:
+          type: string
+        location:
+          type: string
+        avatar:
+          type: string
+        verified:
+          type: boolean
+        availableToday:
+          type: boolean
+      required:
+        - id
+        - name
+        - specialty
+        - rating
+        - reviewCount
+        - distance
+        - location
+        - avatar
+        - verified
+        - availableToday
+    CustomerDashboard:
+      type: object
+      properties:
+        customerName:
+          type: string
+        location:
+          type: string
+        activeRequestCount:
+          type: number
+        completedJobs:
+          type: number
+        savedTechnicians:
+          type: number
+        recentRequests:
+          type: array
+          items:
+            $ref: "#/components/schemas/ServiceRequest"
+      required:
+        - customerName
+        - location
+        - activeRequestCount
+        - completedJobs
+        - savedTechnicians
+        - recentRequests
+    TechnicianDashboard:
+      type: object
+      properties:
+        technicianName:
+          type: string
+        location:
+          type: string
+        todayJobs:
+          type: number
+        weeklyEarnings:
+          type: number
+        rating:
+          type: number
+        profileViews:
+          type: number
+        upcomingJobs:
+          type: array
+          items:
+            $ref: "#/components/schemas/ServiceRequest"
+      required:
+        - technicianName
+        - location
+        - todayJobs
+        - weeklyEarnings
+        - rating
+        - profileViews
+        - upcomingJobs
+    ServiceRequest:
+      type: object
+      properties:
+        id:
+          type: string
+        service:
+          type: string
+        technicianName:
+          type: string
+        customerName:
+          type: string
+        schedule:
+          type: string
+        status:
+          type: string
+        amount:
+          type: number
+      required:
+        - id
+        - service
+        - technicianName
+        - customerName
+        - schedule
+        - status
+        - amount
+    Profile:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+        location:
+          type: string
+        bio:
+          type: string
+        skills:
+          type: array
+          items:
+            type: string
+        avatar:
+          type: string
+      required:
+        - id
+        - name
+        - phone
+        - email
+        - role
+        - location
+        - bio
+        - skills
+        - avatar
+    ProfileUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+        location:
+          type: string
+        bio:
+          type: string
+        skills:
+          type: array
+          items:
+            type: string
+        avatar:
+          type: string
 

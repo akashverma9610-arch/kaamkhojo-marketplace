@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "KaamKhojo"
+description = "A mobile-first hyperlocal service marketplace connecting customers with trusted local technicians and mechanics."
+version = "1.0.0"
+id = "artifacts/kaamkhojo"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19896
+
+[services.development]
+run = "pnpm --filter @workspace/kaamkhojo run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/kaamkhojo", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/kaamkhojo/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19896"
+BASE_PATH = "/"

@@ -1,0 +1,1 @@
+- [OpenAPI Zod compatibility](openapi-zod-compatibility.md) — use numeric schemas that match the installed Zod runtime when running Orval codegen.

@@ -1,6 +1,6 @@
-# [Project name]
+# KaamKhojo
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+KaamKhojo helps customers find trusted nearby technicians and mechanics, while giving local professionals a focused workspace for upcoming jobs.
 
 ## Run & Operate
 
@@ -22,19 +22,29 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/kaamkhojo/src/pages/KaamPages.tsx` — routed landing, auth, role selection, dashboard, and profile screens.
+- `artifacts/kaamkhojo/src/components/kaam/KaamComponents.tsx` — shared brand, shell, responsive navigation, cards, rows, and feedback components.
+- `lib/api-spec/openapi.yaml` — source of truth for marketplace, dashboard, and profile API contracts.
+- `artifacts/api-server/src/routes/` — Express route handlers for the API contract.
+- `lib/db/src/schema/marketplace.ts` — Drizzle schema for profiles, service categories, technicians, and service requests.
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The first release uses a demo profile and seeded PostgreSQL data so all role flows feel populated without local authentication.
+- Wouter owns the small route surface; shared shell components keep customer and technician navigation consistent across mobile and desktop.
+- API contracts are generated from OpenAPI and consumed through `@workspace/api-client-react`; the UI retains graceful demo fallbacks for an empty or unavailable API.
+- Payments and real-time chat are intentionally excluded from the initial architecture.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Customers can browse service categories, search nearby technicians, view active/recent requests, and edit their profile.
+- Technicians can review upcoming jobs, earnings, ratings, profile views, and update their public profile.
+- Visitors can move through landing, login, registration, and role selection before entering a role-specific dashboard.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Mobile-first, clean modern Indian marketplace UI.
+- Keep payments and real-time chat out of the initial build.
 
 ## Gotchas
 
