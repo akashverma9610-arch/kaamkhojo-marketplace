@@ -10,6 +10,7 @@ export interface Technician {
   id: string;
   name: string;
   specialty: string;
+  serviceCategories: string[];
   rating: number;
   reviewCount: number;
   distance: string;

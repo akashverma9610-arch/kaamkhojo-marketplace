@@ -15,5 +15,6 @@ export interface Profile {
   location: string;
   bio: string;
   skills: string[];
+  serviceCategories: string[];
   avatar: string;
 }

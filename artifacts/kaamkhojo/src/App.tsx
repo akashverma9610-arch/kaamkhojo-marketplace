@@ -6,8 +6,8 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import { Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
 import {
-  CustomerDashboardPage, LandingPage, LoginPage, ProfilePage, RoleSelectionPage,
-  TechnicianDashboardPage,
+  CategoryTechniciansPage, CustomerDashboardPage, LandingPage, LoginPage, ProfilePage,
+  RoleSelectionPage, TechnicianDashboardPage, TechnicianProfilePage,
 } from '@/pages/KaamPages';
 
 const queryClient = new QueryClient({
@@ -23,6 +23,8 @@ function Router() {
         <Route path="/register" component={() => <LoginPage register />} />
         <Route path="/role-selection" component={RoleSelectionPage} />
         <Route path="/customer-dashboard" component={CustomerDashboardPage} />
+        <Route path="/category/:slug" component={CategoryTechniciansPage} />
+        <Route path="/technician/:id" component={TechnicianProfilePage} />
         <Route path="/technician-dashboard" component={TechnicianDashboardPage} />
         <Route path="/profile" component={ProfilePage} />
         <Route component={NotFound} />

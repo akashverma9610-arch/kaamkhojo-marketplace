@@ -14,5 +14,6 @@ export interface ProfileUpdate {
   location?: string;
   bio?: string;
   skills?: string[];
+  serviceCategories?: string[];
   avatar?: string;
 }

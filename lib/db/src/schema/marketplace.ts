@@ -1,5 +1,5 @@
 import { createInsertSchema } from "drizzle-zod";
-import { boolean, integer, numeric, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, integer, numeric, pgTable, primaryKey, text, timestamp } from "drizzle-orm/pg-core";
 import { z } from "zod/v4";
 
 export const profilesTable = pgTable("profiles", {
@@ -11,6 +11,7 @@ export const profilesTable = pgTable("profiles", {
   location: text("location").notNull(),
   bio: text("bio").notNull().default(""),
   skills: text("skills").array().notNull().default([]),
+  serviceCategories: text("service_categories").array().notNull().default([]),
   avatar: text("avatar").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
@@ -21,13 +22,18 @@ export const serviceCategoriesTable = pgTable("service_categories", {
   name: text("name").notNull(),
   icon: text("icon").notNull(),
   description: text("description").notNull(),
+  slug: text("slug").notNull().default(""),
+  parentCategory: text("parent_category").notNull().default(""),
+  group: text("group").notNull().default("Home Services"),
   startingPrice: integer("starting_price").notNull(),
+  active: boolean("active").notNull().default(true),
 });
 
 export const techniciansTable = pgTable("technicians", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   specialty: text("specialty").notNull(),
+  serviceCategories: text("service_categories").array().notNull().default([]),
   rating: numeric("rating", { precision: 2, scale: 1 }).notNull(),
   reviewCount: integer("review_count").notNull(),
   distance: text("distance").notNull(),
@@ -36,6 +42,13 @@ export const techniciansTable = pgTable("technicians", {
   verified: boolean("verified").notNull().default(false),
   availableToday: boolean("available_today").notNull().default(false),
 });
+
+export const technicianServicesTable = pgTable("technician_services", {
+  technicianId: text("technician_id").notNull().references(() => techniciansTable.id, { onDelete: "cascade" }),
+  categoryId: text("category_id").notNull().references(() => serviceCategoriesTable.id, { onDelete: "cascade" }),
+}, (table) => ({
+  pk: primaryKey({ columns: [table.technicianId, table.categoryId] }),
+}));
 
 export const serviceRequestsTable = pgTable("service_requests", {
   id: text("id").primaryKey(),
@@ -53,6 +66,7 @@ export const insertProfileSchema = createInsertSchema(profilesTable).omit({
 });
 export const insertServiceCategorySchema = createInsertSchema(serviceCategoriesTable);
 export const insertTechnicianSchema = createInsertSchema(techniciansTable);
+export const insertTechnicianServiceSchema = createInsertSchema(technicianServicesTable);
 export const insertServiceRequestSchema = createInsertSchema(serviceRequestsTable);
 
 export type Profile = typeof profilesTable.$inferSelect;
@@ -60,6 +74,8 @@ export type InsertProfile = z.infer<typeof insertProfileSchema>;
 export type ServiceCategory = typeof serviceCategoriesTable.$inferSelect;
 export type InsertServiceCategory = z.infer<typeof insertServiceCategorySchema>;
 export type Technician = typeof techniciansTable.$inferSelect;
+export type TechnicianService = typeof technicianServicesTable.$inferSelect;
+export type InsertTechnicianService = z.infer<typeof insertTechnicianServiceSchema>;
 export type InsertTechnician = z.infer<typeof insertTechnicianSchema>;
 export type ServiceRequest = typeof serviceRequestsTable.$inferSelect;
 export type InsertServiceRequest = z.infer<typeof insertServiceRequestSchema>;

@@ -25,7 +25,11 @@ export const ListServiceCategoriesResponseItem = zod.object({
   "name": zod.string(),
   "icon": zod.string(),
   "description": zod.string(),
-  "startingPrice": zod.number()
+  "slug": zod.string(),
+  "parentCategory": zod.string(),
+  "group": zod.string(),
+  "startingPrice": zod.number(),
+  "active": zod.boolean()
 })
 export const ListServiceCategoriesResponse = zod.array(ListServiceCategoriesResponseItem)
 
@@ -42,6 +46,7 @@ export const ListTechniciansResponseItem = zod.object({
   "id": zod.string(),
   "name": zod.string(),
   "specialty": zod.string(),
+  "serviceCategories": zod.array(zod.string()),
   "rating": zod.number(),
   "reviewCount": zod.number(),
   "distance": zod.string(),
@@ -108,6 +113,7 @@ export const GetProfileResponse = zod.object({
   "location": zod.string(),
   "bio": zod.string(),
   "skills": zod.array(zod.string()),
+  "serviceCategories": zod.array(zod.string()),
   "avatar": zod.string()
 })
 
@@ -123,6 +129,7 @@ export const UpdateProfileBody = zod.object({
   "location": zod.string().optional(),
   "bio": zod.string().optional(),
   "skills": zod.array(zod.string()).optional(),
+  "serviceCategories": zod.array(zod.string()).optional(),
   "avatar": zod.string().optional()
 })
 
@@ -135,6 +142,7 @@ export const UpdateProfileResponse = zod.object({
   "location": zod.string(),
   "bio": zod.string(),
   "skills": zod.array(zod.string()),
+  "serviceCategories": zod.array(zod.string()),
   "avatar": zod.string()
 })
 

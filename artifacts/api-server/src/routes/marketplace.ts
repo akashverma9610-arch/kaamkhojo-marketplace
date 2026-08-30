@@ -1,6 +1,11 @@
 import { Router, type IRouter } from "express";
 import { asc } from "drizzle-orm";
-import { db, serviceCategoriesTable, techniciansTable } from "@workspace/db";
+import {
+  db,
+  serviceCategoriesTable,
+  techniciansTable,
+  technicianServicesTable,
+} from "@workspace/db";
 import {
   ListServiceCategoriesResponse,
   ListTechniciansQueryParams,
@@ -30,16 +35,30 @@ router.get("/marketplace/technicians", async (req, res): Promise<void> => {
     .select()
     .from(techniciansTable)
     .orderBy(asc(techniciansTable.name));
+  const serviceLinks = await db.select().from(technicianServicesTable);
+  const categoriesByTechnician = new Map<string, string[]>();
+  for (const link of serviceLinks) {
+    const current = categoriesByTechnician.get(link.technicianId) || [];
+    current.push(link.categoryId);
+    categoriesByTechnician.set(link.technicianId, current);
+  }
+  const techniciansWithServices = technicians.map((technician) => ({
+    ...technician,
+    serviceCategories:
+      categoriesByTechnician.get(technician.id) || technician.serviceCategories,
+  }));
 
-  const filtered = technicians.filter((technician) => {
-        const matchesCategory = category
-          ? technician.specialty.toLowerCase().includes(category.toLowerCase())
-          : true;
+  const filtered = techniciansWithServices.filter((technician) => {
+    const matchesCategory = category
+      ? technician.serviceCategories.some((item) =>
+          item.toLowerCase() === category.toLowerCase(),
+        ) || technician.specialty.toLowerCase().includes(category.toLowerCase())
+      : true;
         const matchesLocation = location
           ? technician.location.toLowerCase().includes(location.toLowerCase())
           : true;
         return matchesCategory && matchesLocation;
-      });
+  });
 
   res.json(
     ListTechniciansResponse.parse(

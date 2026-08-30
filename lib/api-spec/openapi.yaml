@@ -142,9 +142,17 @@ components:
           type: string
         description:
           type: string
+        slug:
+          type: string
+        parentCategory:
+          type: string
+        group:
+          type: string
         startingPrice:
           type: number
-      required: [id, name, icon, description, startingPrice]
+        active:
+          type: boolean
+      required: [id, name, icon, description, slug, parentCategory, group, startingPrice, active]
     Technician:
       type: object
       properties:
@@ -154,6 +162,10 @@ components:
           type: string
         specialty:
           type: string
+        serviceCategories:
+          type: array
+          items:
+            type: string
         rating:
           type: number
         reviewCount:
@@ -172,6 +184,7 @@ components:
         - id
         - name
         - specialty
+        - serviceCategories
         - rating
         - reviewCount
         - distance
@@ -276,6 +289,10 @@ components:
           type: array
           items:
             type: string
+        serviceCategories:
+          type: array
+          items:
+            type: string
         avatar:
           type: string
       required:
@@ -287,6 +304,7 @@ components:
         - location
         - bio
         - skills
+        - serviceCategories
         - avatar
     ProfileUpdate:
       type: object
@@ -304,6 +322,10 @@ components:
         bio:
           type: string
         skills:
+          type: array
+          items:
+            type: string
+        serviceCategories:
           type: array
           items:
             type: string

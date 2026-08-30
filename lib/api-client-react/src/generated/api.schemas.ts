@@ -14,13 +14,18 @@ export interface ServiceCategory {
   name: string;
   icon: string;
   description: string;
+  slug: string;
+  parentCategory: string;
+  group: string;
   startingPrice: number;
+  active: boolean;
 }
 
 export interface Technician {
   id: string;
   name: string;
   specialty: string;
+  serviceCategories: string[];
   rating: number;
   reviewCount: number;
   distance: string;
@@ -68,6 +73,7 @@ export interface Profile {
   location: string;
   bio: string;
   skills: string[];
+  serviceCategories: string[];
   avatar: string;
 }
 
@@ -79,6 +85,7 @@ export interface ProfileUpdate {
   location?: string;
   bio?: string;
   skills?: string[];
+  serviceCategories?: string[];
   avatar?: string;
 }
 

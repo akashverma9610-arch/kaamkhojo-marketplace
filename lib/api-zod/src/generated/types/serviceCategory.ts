@@ -11,5 +11,9 @@ export interface ServiceCategory {
   name: string;
   icon: string;
   description: string;
+  slug: string;
+  parentCategory: string;
+  group: string;
   startingPrice: number;
+  active: boolean;
 }
