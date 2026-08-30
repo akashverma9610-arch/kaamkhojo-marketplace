@@ -27,7 +27,9 @@ import type {
   ProfileUpdate,
   ServiceCategory,
   Technician,
-  TechnicianDashboard
+  TechnicianDashboard,
+  WorkRequest,
+  WorkRequestCreate
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -597,4 +599,257 @@ export const useUpdateProfile = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getUpdateProfileMutationOptions(options));
     }
+
+export const getCreateWorkRequestUrl = () => {
+
+
+
+
+  return `/api/work-requests`
+}
+
+/**
+ * @summary Create a customer work request
+ */
+export const createWorkRequest = async (workRequestCreate: WorkRequestCreate, options?: Parameters<typeof customFetch>[1]): Promise<WorkRequest> => {
+    const formData = new FormData();
+formData.append(`categoryId`, workRequestCreate.categoryId);
+formData.append(`problemTitle`, workRequestCreate.problemTitle);
+formData.append(`description`, workRequestCreate.description);
+formData.append(`city`, workRequestCreate.city);
+formData.append(`area`, workRequestCreate.area);
+formData.append(`address`, workRequestCreate.address);
+if(workRequestCreate.latitude !== undefined && workRequestCreate.latitude !== null) {
+ formData.append(`latitude`, workRequestCreate.latitude.toString())
+ }
+if(workRequestCreate.longitude !== undefined && workRequestCreate.longitude !== null) {
+ formData.append(`longitude`, workRequestCreate.longitude.toString())
+ }
+if(workRequestCreate.preferredDate !== undefined && workRequestCreate.preferredDate !== null) {
+ formData.append(`preferredDate`, workRequestCreate.preferredDate);
+ }
+formData.append(`preferredTime`, workRequestCreate.preferredTime);
+if(workRequestCreate.budgetMin !== undefined && workRequestCreate.budgetMin !== null) {
+ formData.append(`budgetMin`, workRequestCreate.budgetMin.toString())
+ }
+if(workRequestCreate.budgetMax !== undefined && workRequestCreate.budgetMax !== null) {
+ formData.append(`budgetMax`, workRequestCreate.budgetMax.toString())
+ }
+formData.append(`budgetText`, workRequestCreate.budgetText);
+formData.append(`urgency`, workRequestCreate.urgency);
+if(workRequestCreate.photos !== undefined) {
+ workRequestCreate.photos.forEach(value => formData.append(`photos`, value));
+ }
+
+  return customFetch<WorkRequest>(getCreateWorkRequestUrl(),
+  {
+    ...options,
+    method: 'POST'
+    ,
+    body: formData
+  }
+);}
+
+
+
+
+
+export const getCreateWorkRequestMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createWorkRequest>>, TError,{data: BodyType<WorkRequestCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createWorkRequest>>, TError,{data: BodyType<WorkRequestCreate>}, TContext> => {
+
+const mutationKey = ['createWorkRequest'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createWorkRequest>>, {data: BodyType<WorkRequestCreate>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createWorkRequest(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateWorkRequestMutationResult = NonNullable<Awaited<ReturnType<typeof createWorkRequest>>>
+    export type CreateWorkRequestMutationBody = BodyType<WorkRequestCreate>
+    export type CreateWorkRequestMutationError = ErrorType<void>
+
+    /**
+ * @summary Create a customer work request
+ */
+export const useCreateWorkRequest = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createWorkRequest>>, TError,{data: BodyType<WorkRequestCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createWorkRequest>>,
+        TError,
+        {data: BodyType<WorkRequestCreate>},
+        TContext
+      > => {
+      return useMutation(getCreateWorkRequestMutationOptions(options));
+    }
+
+export const getListMyWorkRequestsUrl = () => {
+
+
+
+
+  return `/api/work-requests/my`
+}
+
+/**
+ * @summary Get the current customer's work requests
+ */
+export const listMyWorkRequests = async ( options?: Parameters<typeof customFetch>[1]): Promise<WorkRequest[]> => {
+
+  return customFetch<WorkRequest[]>(getListMyWorkRequestsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListMyWorkRequestsQueryKey = () => {
+    return [
+    `/api/work-requests/my`
+    ] as const;
+    }
+
+
+export const getListMyWorkRequestsQueryOptions = <TData = Awaited<ReturnType<typeof listMyWorkRequests>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMyWorkRequests>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListMyWorkRequestsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listMyWorkRequests>>> = ({ signal }) => listMyWorkRequests({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listMyWorkRequests>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListMyWorkRequestsQueryResult = NonNullable<Awaited<ReturnType<typeof listMyWorkRequests>>>
+export type ListMyWorkRequestsQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get the current customer's work requests
+ */
+
+export function useListMyWorkRequests<TData = Awaited<ReturnType<typeof listMyWorkRequests>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMyWorkRequests>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListMyWorkRequestsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetWorkRequestUrl = (id: string,) => {
+
+
+
+
+  return `/api/work-requests/${id}`
+}
+
+/**
+ * @summary Get one of the current customer's work requests
+ */
+export const getWorkRequest = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<WorkRequest> => {
+
+  return customFetch<WorkRequest>(getGetWorkRequestUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetWorkRequestQueryKey = (id: string,) => {
+    return [
+    `/api/work-requests/${id}`
+    ] as const;
+    }
+
+
+export const getGetWorkRequestQueryOptions = <TData = Awaited<ReturnType<typeof getWorkRequest>>, TError = ErrorType<void>>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getWorkRequest>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetWorkRequestQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getWorkRequest>>> = ({ signal }) => getWorkRequest(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getWorkRequest>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetWorkRequestQueryResult = NonNullable<Awaited<ReturnType<typeof getWorkRequest>>>
+export type GetWorkRequestQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get one of the current customer's work requests
+ */
+
+export function useGetWorkRequest<TData = Awaited<ReturnType<typeof getWorkRequest>>, TError = ErrorType<void>>(
+ id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getWorkRequest>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetWorkRequestQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 

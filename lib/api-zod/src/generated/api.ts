@@ -147,3 +147,125 @@ export const UpdateProfileResponse = zod.object({
 })
 
 
+/**
+ * @summary Create a customer work request
+ */
+export const createWorkRequestBodyProblemTitleMax = 100;
+
+export const createWorkRequestBodyDescriptionMax = 1000;
+
+
+
+export const CreateWorkRequestBody = zod.object({
+  "categoryId": zod.string(),
+  "problemTitle": zod.string().max(createWorkRequestBodyProblemTitleMax),
+  "description": zod.string().max(createWorkRequestBodyDescriptionMax),
+  "city": zod.string(),
+  "area": zod.string(),
+  "address": zod.string(),
+  "latitude": zod.number().nullish(),
+  "longitude": zod.number().nullish(),
+  "preferredDate": zod.coerce.date().nullish(),
+  "preferredTime": zod.enum(['MORNING', 'AFTERNOON', 'EVENING', 'ANY_TIME']),
+  "budgetMin": zod.number().nullish(),
+  "budgetMax": zod.number().nullish(),
+  "budgetText": zod.string(),
+  "urgency": zod.enum(['NORMAL', 'URGENT', 'EMERGENCY']),
+  "photos": zod.array(zod.string()).optional()
+})
+
+export const CreateWorkRequestResponse = zod.object({
+  "id": zod.string(),
+  "customerId": zod.string(),
+  "categoryId": zod.string(),
+  "problemTitle": zod.string(),
+  "description": zod.string(),
+  "city": zod.string(),
+  "area": zod.string(),
+  "address": zod.string(),
+  "latitude": zod.number().nullable(),
+  "longitude": zod.number().nullable(),
+  "preferredDate": zod.coerce.date().nullable(),
+  "preferredTime": zod.string(),
+  "budgetMin": zod.number().nullable(),
+  "budgetMax": zod.number().nullable(),
+  "budgetText": zod.string(),
+  "urgency": zod.string(),
+  "status": zod.enum(['OPEN', 'TECHNICIAN_INTERESTED', 'TECHNICIAN_SELECTED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']),
+  "photos": zod.array(zod.object({
+  "id": zod.string(),
+  "photoUrl": zod.string(),
+  "createdAt": zod.coerce.date()
+})),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Get the current customer's work requests
+ */
+export const ListMyWorkRequestsResponseItem = zod.object({
+  "id": zod.string(),
+  "customerId": zod.string(),
+  "categoryId": zod.string(),
+  "problemTitle": zod.string(),
+  "description": zod.string(),
+  "city": zod.string(),
+  "area": zod.string(),
+  "address": zod.string(),
+  "latitude": zod.number().nullable(),
+  "longitude": zod.number().nullable(),
+  "preferredDate": zod.coerce.date().nullable(),
+  "preferredTime": zod.string(),
+  "budgetMin": zod.number().nullable(),
+  "budgetMax": zod.number().nullable(),
+  "budgetText": zod.string(),
+  "urgency": zod.string(),
+  "status": zod.enum(['OPEN', 'TECHNICIAN_INTERESTED', 'TECHNICIAN_SELECTED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']),
+  "photos": zod.array(zod.object({
+  "id": zod.string(),
+  "photoUrl": zod.string(),
+  "createdAt": zod.coerce.date()
+})),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const ListMyWorkRequestsResponse = zod.array(ListMyWorkRequestsResponseItem)
+
+
+/**
+ * @summary Get one of the current customer's work requests
+ */
+export const GetWorkRequestParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const GetWorkRequestResponse = zod.object({
+  "id": zod.string(),
+  "customerId": zod.string(),
+  "categoryId": zod.string(),
+  "problemTitle": zod.string(),
+  "description": zod.string(),
+  "city": zod.string(),
+  "area": zod.string(),
+  "address": zod.string(),
+  "latitude": zod.number().nullable(),
+  "longitude": zod.number().nullable(),
+  "preferredDate": zod.coerce.date().nullable(),
+  "preferredTime": zod.string(),
+  "budgetMin": zod.number().nullable(),
+  "budgetMax": zod.number().nullable(),
+  "budgetText": zod.string(),
+  "urgency": zod.string(),
+  "status": zod.enum(['OPEN', 'TECHNICIAN_INTERESTED', 'TECHNICIAN_SELECTED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']),
+  "photos": zod.array(zod.object({
+  "id": zod.string(),
+  "photoUrl": zod.string(),
+  "createdAt": zod.coerce.date()
+})),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+

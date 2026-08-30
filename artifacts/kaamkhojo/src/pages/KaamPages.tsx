@@ -7,18 +7,20 @@ import {
 } from 'lucide-react';
 import {
   getGetCustomerDashboardQueryKey, getGetProfileQueryKey, getGetTechnicianDashboardQueryKey,
-  getHealthCheckQueryKey, getListServiceCategoriesQueryKey, getListTechniciansQueryKey,
+  getGetWorkRequestQueryKey, getHealthCheckQueryKey, getListMyWorkRequestsQueryKey,
+  getListServiceCategoriesQueryKey, getListTechniciansQueryKey,
   useGetCustomerDashboard,
   useGetProfile, useGetTechnicianDashboard, useHealthCheck, useListServiceCategories,
-  useListTechnicians, useUpdateProfile,
+  useListTechnicians, useUpdateProfile, useGetWorkRequest, useListMyWorkRequests,
 } from '@workspace/api-client-react';
-import type { Profile } from '@workspace/api-client-react';
+import type { Profile, WorkRequest } from '@workspace/api-client-react';
 import {
   BrandMark, CategorySection, CategoryCard, categoryGroups, fallbackCategories,
   fallbackRequests, fallbackTechnicians, FilterBar, getCategoryIcon, PageIntro,
   PublicHeader, QueryState, RequestRow, SearchBar, ServiceMultiSelect, Shell,
-  StatCard, TechnicianCard, ToastNote, type Category, type MarketplaceTechnician,
+  StatCard, StatusBadge, TechnicianCard, ToastNote, type Category, type MarketplaceTechnician,
 } from '@/components/kaam/KaamComponents';
+import { WorkRequestForm, type WorkRequestErrors, type WorkRequestFormValue } from '@/components/kaam/WorkRequestComponents';
 
 const fallbackCustomer = { customerName: 'Aarav Mehta', location: 'Indiranagar, Bengaluru', activeRequestCount: 1, completedJobs: 8, savedTechnicians: 4, recentRequests: fallbackRequests };
 const fallbackTechnician = { technicianName: 'Ravi Kumar', location: 'Indiranagar, Bengaluru', todayJobs: 3, weeklyEarnings: 12450, rating: 4.9, profileViews: 187, upcomingJobs: fallbackRequests.slice(0, 2) };
@@ -68,11 +70,126 @@ export function RoleSelectionPage() {
 export function CustomerDashboardPage() {
   const [, setLocation] = useLocation(); const [search, setSearch] = useState(''); const [saved, setSaved] = useState<string[]>([]); const [notice, setNotice] = useState('');
   const dashboard = useGetCustomerDashboard({ query: { queryKey: getGetCustomerDashboardQueryKey(), retry: false } }); const categoriesQuery = useListServiceCategories({ query: { queryKey: getListServiceCategoriesQueryKey(), retry: false } }); const techniciansQuery = useListTechnicians({}, { query: { queryKey: getListTechniciansQueryKey({}), retry: false } });
-  const info = dashboard.data || fallbackCustomer; const categories = getCategories(categoriesQuery.data); const allTechnicians = mergeTechnicians(techniciansQuery.data); const query = search.trim().toLowerCase();
+  const workRequestsQuery = useListMyWorkRequests({ query: { queryKey: getListMyWorkRequestsQueryKey(), retry: false } }); const info = dashboard.data || fallbackCustomer; const categories = getCategories(categoriesQuery.data); const allTechnicians = mergeTechnicians(techniciansQuery.data); const query = search.trim().toLowerCase();
   const visibleCategories = categories.filter((category) => !query || categorySearchText(category).includes(query)); const visibleTechnicians = allTechnicians.filter((technician) => !query || technicianSearchText(technician, categories).includes(query));
   const selectCategory = (category: Category) => setLocation(`/category/${category.slug || category.id}`);
   const grouped = categoryGroups.map((group) => ({ group, items: visibleCategories.filter((category) => category.group === group) })).filter(({ items }) => items.length);
-  return <Shell title="Good morning, Aarav"><div className="animate-rise-in"><PageIntro eyebrow="Tuesday, 17 June 2025" title="Let’s get that sorted." description={`You have ${info.activeRequestCount} active request${info.activeRequestCount === 1 ? '' : 's'} around ${info.location}.`} action={<button onClick={() => document.getElementById('find')?.scrollIntoView({ behavior: 'smooth' })} className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground"><Plus size={16} /> New request</button>} /><div className="grid gap-4 sm:grid-cols-3"><StatCard label="Active requests" value={info.activeRequestCount} detail="1 technician confirmed" icon={Clock3} tone="yellow" /><StatCard label="Jobs completed" value={info.completedJobs} detail="You know who to call" icon={Check} tone="teal" /><StatCard label="Saved technicians" value={info.savedTechnicians} detail="Your local shortlist" icon={Star} tone="ink" /></div><section id="find" className="mt-10 scroll-mt-24"><div className="mb-5"><p className="text-xs font-bold uppercase tracking-[.18em] text-primary">Start with the kaam</p><h2 className="mt-1 font-display text-2xl font-bold">What needs fixing?</h2></div><SearchBar value={search} onChange={setSearch} placeholder="Search electrician, AC repair or Raj Kumar" /><div className="mt-5 rounded-2xl border border-primary/20 bg-primary/10 p-4"><p className="text-sm font-bold">Popular Services</p><div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">{categories.slice(0, 4).map((category) => <button key={category.id} onClick={() => selectCategory(category)} className="flex items-center gap-2 rounded-xl bg-card px-3 py-3 text-left text-xs font-bold shadow-sm"><span className="text-[#96670b]">{(() => { const Icon = getCategoryIcon(category.icon); return <Icon size={17} />; })()}</span>{category.name}</button>)}</div></div></section><section className="mt-10 space-y-10">{grouped.map(({ group, items }) => <CategorySection key={group} title={group} categories={items} onSelect={selectCategory} />)}</section><section id="nearby" className="mt-12 scroll-mt-24"><div className="mb-5 flex items-end justify-between"><div><p className="text-xs font-bold uppercase tracking-[.18em] text-primary">Near {info.location.split(',')[0]}</p><h2 className="mt-1 font-display text-2xl font-bold">{query ? 'Search results' : 'People ready to help'}</h2></div><span className="text-xs font-semibold text-muted-foreground">{visibleTechnicians.length} technicians</span></div><QueryState loading={techniciansQuery.isLoading} error={Boolean(techniciansQuery.isError && !techniciansQuery.data)} empty={!visibleTechnicians.length} onRetry={() => void techniciansQuery.refetch()}><div className="grid gap-4 lg:grid-cols-3">{visibleTechnicians.map((technician) => <TechnicianCard key={technician.id} technician={technician} categories={categories} onSave={(id) => { const already = saved.includes(id); setSaved((current) => already ? current.filter((item) => item !== id) : [...current, id]); setNotice(already ? 'Removed from saved technicians.' : 'Saved to your local shortlist.'); }} onView={(id) => setLocation(`/technician/${id}`)} />)}</div></QueryState></section><section id="requests" className="mt-12 scroll-mt-24"><div className="mb-5 flex items-end justify-between"><div><p className="text-xs font-bold uppercase tracking-[.18em] text-primary">Your activity</p><h2 className="mt-1 font-display text-2xl font-bold">Recent requests</h2></div></div><div className="space-y-2">{info.recentRequests?.map((request) => <RequestRow key={request.id} request={request} />)}</div></section></div>{notice && <ToastNote message={notice} onClose={() => setNotice('')} />}</Shell>;
+  return <Shell title="Good morning, Aarav"><div className="animate-rise-in"><PageIntro eyebrow="Tuesday, 17 June 2025" title="Let’s get that sorted." description={`You have ${info.activeRequestCount} active request${info.activeRequestCount === 1 ? '' : 's'} around ${info.location}.`} action={<Link href="/work-requests/new" className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground" data-testid="button-post-work"><Plus size={16} /> Post Your Work</Link>} /><div className="grid gap-4 sm:grid-cols-3"><StatCard label="Active requests" value={info.activeRequestCount} detail="1 technician confirmed" icon={Clock3} tone="yellow" /><StatCard label="Jobs completed" value={info.completedJobs} detail="You know who to call" icon={Check} tone="teal" /><StatCard label="Saved technicians" value={info.savedTechnicians} detail="Your local shortlist" icon={Star} tone="ink" /></div><section id="find" className="mt-10 scroll-mt-24"><div className="mb-5"><p className="text-xs font-bold uppercase tracking-[.18em] text-primary">Start with the kaam</p><h2 className="mt-1 font-display text-2xl font-bold">What needs fixing?</h2></div><SearchBar value={search} onChange={setSearch} placeholder="Search electrician, AC repair or Raj Kumar" /><div className="mt-5 rounded-2xl border border-primary/20 bg-primary/10 p-4"><p className="text-sm font-bold">Popular Services</p><div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">{categories.slice(0, 4).map((category) => <button key={category.id} onClick={() => selectCategory(category)} className="flex items-center gap-2 rounded-xl bg-card px-3 py-3 text-left text-xs font-bold shadow-sm"><span className="text-[#96670b]">{(() => { const Icon = getCategoryIcon(category.icon); return <Icon size={17} />; })()}</span>{category.name}</button>)}</div></div></section><section className="mt-10 space-y-10">{grouped.map(({ group, items }) => <CategorySection key={group} title={group} categories={items} onSelect={selectCategory} />)}</section><section id="nearby" className="mt-12 scroll-mt-24"><div className="mb-5 flex items-end justify-between"><div><p className="text-xs font-bold uppercase tracking-[.18em] text-primary">Near {info.location.split(',')[0]}</p><h2 className="mt-1 font-display text-2xl font-bold">{query ? 'Search results' : 'People ready to help'}</h2></div><span className="text-xs font-semibold text-muted-foreground">{visibleTechnicians.length} technicians</span></div><QueryState loading={techniciansQuery.isLoading} error={Boolean(techniciansQuery.isError && !techniciansQuery.data)} empty={!visibleTechnicians.length} onRetry={() => void techniciansQuery.refetch()}><div className="grid gap-4 lg:grid-cols-3">{visibleTechnicians.map((technician) => <TechnicianCard key={technician.id} technician={technician} categories={categories} onSave={(id) => { const already = saved.includes(id); setSaved((current) => already ? current.filter((item) => item !== id) : [...current, id]); setNotice(already ? 'Removed from saved technicians.' : 'Saved to your local shortlist.'); }} onView={(id) => setLocation(`/technician/${id}`)} />)}</div></QueryState></section><section id="requests" className="mt-12 scroll-mt-24"><div className="mb-5 flex items-end justify-between"><div><p className="text-xs font-bold uppercase tracking-[.18em] text-primary">Your activity</p><h2 className="mt-1 font-display text-2xl font-bold">Recent requests</h2></div><Link href="/work-requests/new" className="text-xs font-bold text-[#96670b]">Post another</Link></div><div className="space-y-2">{info.recentRequests?.map((request) => <RequestRow key={request.id} request={request} />)}</div>{workRequestsQuery.data?.length ? <div className="mt-5 space-y-3"><p className="text-xs font-bold uppercase tracking-[.16em] text-primary">Posted work</p>{workRequestsQuery.data.map((request) => <Link key={request.id} href={`/work-requests/${request.id}`} className="block rounded-2xl border border-card-border bg-card p-4 shadow-sm hover:border-primary"><div className="flex items-start justify-between gap-3"><div><p className="font-bold">{request.problemTitle}</p><p className="mt-1 text-xs text-muted-foreground">{categories.find((category) => category.id === request.categoryId)?.name || request.categoryId} · {request.area}, {request.city}</p></div><StatusBadge status={request.status} /></div></Link>)}</div> : null}</section></div>{notice && <ToastNote message={notice} onClose={() => setNotice('')} />}</Shell>;
+}
+
+const blankWorkRequest: WorkRequestFormValue = {
+  categoryId: '',
+  problemTitle: '',
+  description: '',
+  files: [],
+  city: 'Bengaluru',
+  area: 'Indiranagar',
+  address: '',
+  latitude: '',
+  longitude: '',
+  preferredDate: 'TODAY',
+  customDate: '',
+  preferredTime: 'ANY_TIME',
+  budgetText: '',
+  budgetMin: null,
+  budgetMax: null,
+  urgency: 'NORMAL',
+};
+
+function dateForWorkRequest(value: WorkRequestFormValue) {
+  if (value.preferredDate === 'CUSTOM') return value.customDate || null;
+  const date = new Date();
+  if (value.preferredDate === 'TOMORROW') date.setDate(date.getDate() + 1);
+  return date.toISOString().slice(0, 10);
+}
+
+function validateWorkRequest(value: WorkRequestFormValue): WorkRequestErrors {
+  const errors: WorkRequestErrors = {};
+  if (!value.categoryId) errors.categoryId = 'Choose the service you need.';
+  if (!value.problemTitle.trim()) errors.problemTitle = 'Add a short title for the problem.';
+  if (!value.description.trim()) errors.description = 'Add a few details so technicians can prepare.';
+  if (!value.city.trim()) errors.city = 'Add your city.';
+  if (!value.area.trim()) errors.area = 'Add your area or locality.';
+  if (!value.address.trim()) errors.address = 'Add a full address or nearby landmark.';
+  if (value.latitude && Number.isNaN(Number(value.latitude))) errors.latitude = 'Latitude must be a number.';
+  if (value.longitude && Number.isNaN(Number(value.longitude))) errors.longitude = 'Longitude must be a number.';
+  if (!value.budgetText) errors.budgetText = 'Choose a budget range, or select Not Sure.';
+  if (value.preferredDate === 'CUSTOM' && !value.customDate) errors.customDate = 'Choose a date.';
+  return errors;
+}
+
+export function WorkRequestFormPage() {
+  const [, setLocation] = useLocation();
+  const categoriesQuery = useListServiceCategories({ query: { queryKey: getListServiceCategoriesQueryKey(), retry: false } });
+  const categories = getCategories(categoriesQuery.data);
+  const [value, setValue] = useState<WorkRequestFormValue>(blankWorkRequest);
+  const [errors, setErrors] = useState<WorkRequestErrors>({});
+  const [submitting, setSubmitting] = useState(false);
+
+  const onChange = <K extends keyof WorkRequestFormValue>(key: K, nextValue: WorkRequestFormValue[K]) => {
+    setValue((current) => ({ ...current, [key]: nextValue }));
+    setErrors((current) => ({ ...current, [key]: undefined, form: undefined }));
+  };
+
+  const submit = async (event: FormEvent) => {
+    event.preventDefault();
+    const nextErrors = validateWorkRequest(value);
+    if (Object.keys(nextErrors).length) {
+      setErrors(nextErrors);
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append('categoryId', value.categoryId);
+      formData.append('problemTitle', value.problemTitle.trim());
+      formData.append('description', value.description.trim());
+      formData.append('city', value.city.trim());
+      formData.append('area', value.area.trim());
+      formData.append('address', value.address.trim());
+      if (value.latitude) formData.append('latitude', value.latitude);
+      if (value.longitude) formData.append('longitude', value.longitude);
+      const preferredDate = dateForWorkRequest(value);
+      if (preferredDate) formData.append('preferredDate', preferredDate);
+      formData.append('preferredTime', value.preferredTime);
+      formData.append('budgetText', value.budgetText);
+      if (value.budgetMin !== null) formData.append('budgetMin', String(value.budgetMin));
+      if (value.budgetMax !== null) formData.append('budgetMax', String(value.budgetMax));
+      formData.append('urgency', value.urgency);
+      value.files.forEach((file) => formData.append('photos', file));
+      const response = await fetch('/api/work-requests', { method: 'POST', body: formData });
+      const data = await response.json() as WorkRequest & { error?: string };
+      if (!response.ok) throw new Error(data.error || 'We could not post your work right now.');
+      setLocation(`/work-requests/${data.id}`);
+    } catch (error) {
+      setErrors({ form: error instanceof Error ? error.message : 'We could not post your work right now.' });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return <Shell title="Post your work"><div className="mx-auto max-w-3xl animate-rise-in"><Link href="/customer-dashboard" className="mb-6 inline-flex items-center gap-2 text-sm font-bold text-muted-foreground"><ArrowLeft size={15} /> Back to dashboard</Link><PageIntro eyebrow="New work request" title="Put the problem in motion." description="Give local technicians the context they need to say yes with confidence." /><WorkRequestForm categories={categories} value={value} errors={errors} onChange={onChange} onFilesChange={(files) => onChange('files', files)} onSubmit={submit} submitting={submitting} /></div></Shell>;
+}
+
+function formatWorkRequestDate(date: string | null) {
+  if (!date) return 'Flexible date';
+  const parsed = new Date(date.length === 10 ? `${date}T00:00:00` : date);
+  return Number.isNaN(parsed.getTime()) ? 'Flexible date' : new Intl.DateTimeFormat('en-IN', { dateStyle: 'medium' }).format(parsed);
+}
+
+function workRequestTimeLabel(time: string) {
+  return time.replace('_', ' ').toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+export function WorkRequestDetailsPage() {
+  const [, params] = useRoute('/work-requests/:id');
+  const [, setLocation] = useLocation();
+  const id = params?.id || '';
+  const requestQuery = useGetWorkRequest(id, { query: { queryKey: getGetWorkRequestQueryKey(id), retry: false } });
+  const categoriesQuery = useListServiceCategories({ query: { queryKey: getListServiceCategoriesQueryKey(), retry: false } });
+  const request = requestQuery.data;
+  const category = getCategories(categoriesQuery.data).find((item) => item.id === request?.categoryId);
+  return <Shell title="Work request details"><div className="mx-auto max-w-3xl animate-rise-in"><button onClick={() => setLocation('/customer-dashboard')} className="mb-6 inline-flex items-center gap-2 text-sm font-bold text-muted-foreground"><ArrowLeft size={15} /> Back to dashboard</button><QueryState loading={requestQuery.isLoading} error={Boolean(requestQuery.isError)} onRetry={() => void requestQuery.refetch()}>{request && <><div className="rounded-3xl bg-secondary p-6 text-secondary-foreground shadow-lg sm:p-9"><div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start"><div><p className="text-xs font-bold uppercase tracking-[.18em] text-primary">Work request posted</p><h1 className="mt-2 font-display text-3xl font-bold">{request.problemTitle}</h1><p className="mt-3 text-sm text-secondary-foreground/65">{category?.name || request.categoryId} · {request.area}, {request.city}</p></div><StatusBadge status={request.status} /></div><div className="mt-7 grid gap-3 border-t border-white/10 pt-5 sm:grid-cols-3"><div><p className="text-[11px] uppercase tracking-wider text-secondary-foreground/50">Preferred date</p><p className="mt-1 text-sm font-bold">{formatWorkRequestDate(request.preferredDate)}</p></div><div><p className="text-[11px] uppercase tracking-wider text-secondary-foreground/50">Preferred time</p><p className="mt-1 text-sm font-bold">{workRequestTimeLabel(request.preferredTime)}</p></div><div><p className="text-[11px] uppercase tracking-wider text-secondary-foreground/50">Budget</p><p className="mt-1 text-sm font-bold">{request.budgetText}</p></div></div></div><div className="mt-5 rounded-2xl border border-card-border bg-card p-5 shadow-sm sm:p-7"><div className="flex items-center justify-between"><h2 className="font-display text-2xl font-bold">Request details</h2><span className={`rounded-full px-3 py-1.5 text-xs font-bold ${request.urgency === 'EMERGENCY' ? 'bg-destructive/10 text-destructive' : request.urgency === 'URGENT' ? 'bg-primary/20 text-[#79510b]' : 'bg-muted text-muted-foreground'}`}>{request.urgency.toLowerCase()}</span></div><p className="mt-4 whitespace-pre-wrap text-sm leading-7 text-muted-foreground">{request.description}</p><div className="mt-6 border-t border-border pt-5"><p className="text-xs font-bold uppercase tracking-[.16em] text-muted-foreground">Where to help</p><p className="mt-2 text-sm leading-6">{request.address}<br />{request.area}, {request.city}</p></div>{request.photos.length > 0 && <div className="mt-6 border-t border-border pt-5"><p className="text-xs font-bold uppercase tracking-[.16em] text-muted-foreground">Attached photos</p><div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">{request.photos.map((photo) => <img key={photo.id} src={photo.photoUrl} alt="Uploaded problem reference" className="aspect-square w-full rounded-xl object-cover" />)}</div></div>}<p className="mt-7 text-xs text-muted-foreground">Technicians can now review your request. We’ll keep you posted as it moves forward.</p></div></>}</QueryState></div></Shell>;
 }
 
 export function CategoryTechniciansPage() {

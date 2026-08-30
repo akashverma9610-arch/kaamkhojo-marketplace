@@ -1,10 +1,10 @@
 ---
 name: OpenAPI Zod compatibility
-description: Orval integer schemas can emit zod.int, which is incompatible with the workspace's installed Zod runtime.
+description: Orval-generated server Zod schemas must stay compatible with this workspace's installed runtime and Node globals.
 ---
 
-Use OpenAPI `number` for API numeric fields when generating schemas in this workspace unless the Zod/Orval compatibility is upgraded together.
+Use OpenAPI `number` for API numeric fields when generating schemas in this workspace unless the Zod/Orval compatibility is upgraded together. For multipart uploads, avoid OpenAPI `format: binary` in shared server contracts unless the Node package explicitly provides File/Blob globals; model stored photo references as strings and validate incoming files at the Express boundary.
 
-**Why:** The current generated Zod package resolves to a runtime without `zod.int()`, so integer fields make the shared library typecheck fail after codegen.
+**Why:** The current generated Zod package resolves to a runtime without `zod.int()`, and its Node TypeScript/runtime context does not provide browser File/Blob globals. Either shape can break shared codegen even when the browser client itself supports it.
 
-**How to apply:** If integer semantics are important, update the workspace Zod/Orval setup as one compatibility change; otherwise use `number` in the contract and keep boundary validation explicit where needed.
+**How to apply:** If integer semantics or browser-native multipart types are important, update the workspace Zod/Orval/server setup as one compatibility change; otherwise use neutral OpenAPI types and keep semantic/file validation explicit at the API boundary.

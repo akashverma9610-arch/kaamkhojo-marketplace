@@ -7,7 +7,8 @@ import NotFound from '@/pages/not-found';
 import { Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
 import {
   CategoryTechniciansPage, CustomerDashboardPage, LandingPage, LoginPage, ProfilePage,
-  RoleSelectionPage, TechnicianDashboardPage, TechnicianProfilePage,
+  RoleSelectionPage, TechnicianDashboardPage, TechnicianProfilePage, WorkRequestDetailsPage,
+  WorkRequestFormPage,
 } from '@/pages/KaamPages';
 
 const queryClient = new QueryClient({
@@ -23,6 +24,8 @@ function Router() {
         <Route path="/register" component={() => <LoginPage register />} />
         <Route path="/role-selection" component={RoleSelectionPage} />
         <Route path="/customer-dashboard" component={CustomerDashboardPage} />
+        <Route path="/work-requests/new" component={WorkRequestFormPage} />
+        <Route path="/work-requests/:id" component={WorkRequestDetailsPage} />
         <Route path="/category/:slug" component={CategoryTechniciansPage} />
         <Route path="/technician/:id" component={TechnicianProfilePage} />
         <Route path="/technician-dashboard" component={TechnicianDashboardPage} />

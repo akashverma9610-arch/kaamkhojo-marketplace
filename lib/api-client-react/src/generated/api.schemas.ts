@@ -89,6 +89,86 @@ export interface ProfileUpdate {
   avatar?: string;
 }
 
+export type WorkRequestStatus = typeof WorkRequestStatus[keyof typeof WorkRequestStatus];
+
+
+export const WorkRequestStatus = {
+  OPEN: 'OPEN',
+  TECHNICIAN_INTERESTED: 'TECHNICIAN_INTERESTED',
+  TECHNICIAN_SELECTED: 'TECHNICIAN_SELECTED',
+  IN_PROGRESS: 'IN_PROGRESS',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type WorkRequestCreatePreferredTime = typeof WorkRequestCreatePreferredTime[keyof typeof WorkRequestCreatePreferredTime];
+
+
+export const WorkRequestCreatePreferredTime = {
+  MORNING: 'MORNING',
+  AFTERNOON: 'AFTERNOON',
+  EVENING: 'EVENING',
+  ANY_TIME: 'ANY_TIME',
+} as const;
+
+export type WorkRequestCreateUrgency = typeof WorkRequestCreateUrgency[keyof typeof WorkRequestCreateUrgency];
+
+
+export const WorkRequestCreateUrgency = {
+  NORMAL: 'NORMAL',
+  URGENT: 'URGENT',
+  EMERGENCY: 'EMERGENCY',
+} as const;
+
+export interface WorkRequestCreate {
+  categoryId: string;
+  /** @maxLength 100 */
+  problemTitle: string;
+  /** @maxLength 1000 */
+  description: string;
+  city: string;
+  area: string;
+  address: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  preferredDate?: string | null;
+  preferredTime: WorkRequestCreatePreferredTime;
+  budgetMin?: number | null;
+  budgetMax?: number | null;
+  budgetText: string;
+  urgency: WorkRequestCreateUrgency;
+  photos?: string[];
+}
+
+export interface WorkRequestPhoto {
+  id: string;
+  photoUrl: string;
+  createdAt: string;
+}
+
+export interface WorkRequest {
+  id: string;
+  customerId: string;
+  categoryId: string;
+  problemTitle: string;
+  description: string;
+  city: string;
+  area: string;
+  address: string;
+  latitude: number | null;
+  longitude: number | null;
+  preferredDate: string | null;
+  preferredTime: string;
+  budgetMin: number | null;
+  budgetMax: number | null;
+  budgetText: string;
+  urgency: string;
+  status: WorkRequestStatus;
+  photos: WorkRequestPhoto[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export type ListTechniciansParams = {
 category?: string;
 location?: string;
