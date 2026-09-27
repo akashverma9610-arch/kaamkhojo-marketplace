@@ -188,6 +188,72 @@ paths:
           description: Customer access required
         "404":
           description: Work request not found
+    put:
+      operationId: updateWorkRequest
+      tags: [work-requests]
+      summary: Update an open work request owned by the current customer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/WorkRequestCreate"
+                - type: object
+                  properties:
+                    retainPhotoIds:
+                      type: array
+                      items: { type: string }
+      responses:
+        "200":
+          description: Updated work request
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/WorkRequest" }
+        "400": { description: Invalid work request }
+        "404": { description: Work request not found }
+        "409": { description: Work request is no longer editable }
+    delete:
+      operationId: cancelWorkRequest
+      tags: [work-requests]
+      summary: Soft-cancel an open work request owned by the current customer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Cancelled work request
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/WorkRequest" }
+        "404": { description: Work request not found }
+        "409": { description: Work request is no longer cancellable }
+  /work-requests/{id}/interested-technicians:
+    get:
+      operationId: listInterestedTechnicians
+      tags: [work-requests]
+      summary: List technicians interested in one of the current customer's work request
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Interested technicians
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/InterestedTechnician" }
+        "404": { description: Work request not found }
 components:
   schemas:
     HealthStatus:
@@ -511,4 +577,13 @@ components:
           type: string
           format: date-time
       required: [id, customerId, categoryId, problemTitle, description, city, area, address, latitude, longitude, preferredDate, preferredTime, budgetMin, budgetMax, budgetText, urgency, status, photos, createdAt, updatedAt]
-
+    InterestedTechnician:
+      type: object
+      required: [id, message, status, createdAt, technician]
+      properties:
+        id: { type: string }
+        message: { type: string }
+        status: { type: string }
+        createdAt: { type: string, format: date-time }
+        technician:
+          $ref: "#/components/schemas/Technician"

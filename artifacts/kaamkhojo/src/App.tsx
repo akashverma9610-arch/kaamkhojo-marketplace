@@ -7,9 +7,10 @@ import NotFound from '@/pages/not-found';
 import { Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
 import {
   CategoryTechniciansPage, CustomerDashboardPage, LandingPage, LoginPage, ProfilePage,
-  RoleSelectionPage, TechnicianDashboardPage, TechnicianProfilePage, WorkRequestDetailsPage,
+  RoleSelectionPage, TechnicianDashboardPage, TechnicianProfilePage,
   WorkRequestFormPage,
 } from '@/pages/KaamPages';
+import { EditWorkRequestPage, ManagedWorkRequestDetailsPage, MyWorkRequestsPage } from '@/pages/WorkRequestManagementPage';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, refetchOnWindowFocus: false } },
@@ -24,8 +25,10 @@ function Router() {
         <Route path="/register" component={() => <LoginPage register />} />
         <Route path="/role-selection" component={RoleSelectionPage} />
         <Route path="/customer-dashboard" component={CustomerDashboardPage} />
+        <Route path="/work-requests" component={MyWorkRequestsPage} />
         <Route path="/work-requests/new" component={WorkRequestFormPage} />
-        <Route path="/work-requests/:id" component={WorkRequestDetailsPage} />
+        <Route path="/work-requests/:id/edit" component={EditWorkRequestPage} />
+        <Route path="/work-requests/:id" component={ManagedWorkRequestDetailsPage} />
         <Route path="/category/:slug" component={CategoryTechniciansPage} />
         <Route path="/technician/:id" component={TechnicianProfilePage} />
         <Route path="/technician-dashboard" component={TechnicianDashboardPage} />

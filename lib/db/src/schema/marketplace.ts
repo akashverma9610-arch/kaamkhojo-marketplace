@@ -95,6 +95,18 @@ export const workRequestPhotosTable = pgTable("work_request_photos", {
   workRequestIdx: index("work_request_photos_work_request_id_idx").on(table.workRequestId),
 }));
 
+export const workRequestInterestsTable = pgTable("work_request_interests", {
+  id: text("id").primaryKey(),
+  workRequestId: text("work_request_id").notNull().references(() => workRequestsTable.id, { onDelete: "cascade" }),
+  technicianId: text("technician_id").notNull().references(() => techniciansTable.id, { onDelete: "cascade" }),
+  message: text("message").notNull().default(""),
+  status: text("status").notNull().default("PENDING"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => ({
+  workRequestIdx: index("work_request_interests_work_request_id_idx").on(table.workRequestId),
+  technicianIdx: index("work_request_interests_technician_id_idx").on(table.technicianId),
+}));
+
 export const insertProfileSchema = createInsertSchema(profilesTable).omit({
   createdAt: true,
   updatedAt: true,
@@ -108,6 +120,9 @@ export const insertWorkRequestSchema = createInsertSchema(workRequestsTable).omi
   updatedAt: true,
 });
 export const insertWorkRequestPhotoSchema = createInsertSchema(workRequestPhotosTable).omit({
+  createdAt: true,
+});
+export const insertWorkRequestInterestSchema = createInsertSchema(workRequestInterestsTable).omit({
   createdAt: true,
 });
 
@@ -125,6 +140,8 @@ export type WorkRequest = typeof workRequestsTable.$inferSelect;
 export type InsertWorkRequest = z.infer<typeof insertWorkRequestSchema>;
 export type WorkRequestPhoto = typeof workRequestPhotosTable.$inferSelect;
 export type InsertWorkRequestPhoto = z.infer<typeof insertWorkRequestPhotoSchema>;
+export type WorkRequestInterest = typeof workRequestInterestsTable.$inferSelect;
+export type InsertWorkRequestInterest = z.infer<typeof insertWorkRequestInterestSchema>;
 
 export const WORK_REQUEST_STATUSES = [
   "OPEN",
